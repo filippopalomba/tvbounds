@@ -7,6 +7,8 @@ This is a new submission: the first release of tvbounds (version 0.1.0).
 ## Test environments
 
 * local: macOS (Apple Silicon, arm64, Darwin 25.5), R 4.5.2
+* win-builder: R-devel and R-release
+* R-hub: Linux (R-devel)
 
 ## R CMD check results
 
@@ -15,9 +17,12 @@ Run with `R CMD check --as-cran` on the built source tarball:
 0 errors | 0 warnings | 1 note
 
 * The only NOTE is the standard "checking CRAN incoming feasibility ...
-  New submission" NOTE. (Locally a second NOTE reports that README.md and
-  NEWS.md cannot be checked because the checking machine lacks pandoc;
-  this is an artifact of the local toolchain, not of the package.)
+  New submission" NOTE.
+
+(On the local machine a second NOTE appears under "checking HTML version of
+manual", reporting that HTML validation and math rendering were skipped
+because the system 'tidy' is too old and the 'V8' package is unavailable.
+That is a property of the local toolchain rather than of the package.)
 
 ## SystemRequirements: Julia and KNITRO
 
