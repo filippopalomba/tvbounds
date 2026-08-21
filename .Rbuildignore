@@ -1,0 +1,17 @@
+^\.git$
+^\.gitignore$
+^\.[^/]+$
+^\.github$
+^LICENSE\.md$
+^README\.Rmd$
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^.*\.Rcheck$
+^.*\.tar\.gz$
+^doc$
+^Meta$
+^\.vscode$
+^\.DS_Store$
+^tvbounds-manual\.pdf$

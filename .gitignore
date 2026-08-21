@@ -1,0 +1,36 @@
+# R session artifacts
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Build artifacts
+*.tar.gz
+*.Rcheck/
+/Meta/
+/doc/
+inst/doc/
+
+# Compiled objects (none expected, but keep the net wide)
+*.o
+*.so
+*.dll
+
+# Julia: lockfile is machine-specific, Project.toml is the spec
+inst/julia/Manifest.toml
+inst/julia/**/Manifest.toml
+
+# knitr/vignette intermediates
+vignettes/*.html
+vignettes/*.R
+vignettes/*_cache/
+vignettes/*_files/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor noise
+.vscode/
+.idea/

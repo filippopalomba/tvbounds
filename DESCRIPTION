@@ -1,0 +1,31 @@
+Package: tvbounds
+Type: Package
+Title: Sensitivity Analysis and Bounds under Total Variation Neighborhoods
+Version: 0.1.0
+Authors@R: person(given = "Filippo",
+                  family = "Palomba",
+                  email = "fpalomba@princeton.edu",
+                  role = c("aut", "cre", "cph"))
+Description: Implements the sensitivity analysis framework of Palomba (2026)
+    for randomized experiments with attrition, counterfactuals in structural
+    models, and recentered instrumental variables. Computes and plots
+    sensitivity bounds together with their confidence intervals and robustness
+    summary measures.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports:
+    ggplot2 (>= 3.4.0),
+    stats,
+    utils
+Suggests:
+    JuliaCall,
+    testthat (>= 3.1.5),
+    knitr,
+    rmarkdown
+SystemRequirements: For tvbounds_counterfactual(): Julia (>= 1.9) and the
+    Artelys KNITRO solver with a valid license.
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3

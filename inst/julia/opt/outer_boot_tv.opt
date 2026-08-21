@@ -1,0 +1,22 @@
+# KNITRO 15.1 options for the outer bootstrap loop, TV variant.
+# Identical to outer_boot.opt plus a wall-clock cap: each TV inner solve
+# at M=5k costs ~0.1-0.4s and the FD gradient does l+1 = 11 of them per
+# iteration, so an unlucky draw could otherwise run for ~15 min
+# (maxit 200).  The cap only affects the stage-3 sanity check, never the
+# reported bounds or SEs.
+nlp_algorithm 0
+convex        0
+gradopt       1
+hessopt       2
+feastol       1e-06
+feastol_abs   1e-03
+opttol        1e-06
+opttol_abs    1e-03
+ftol          1e-12
+ftol_iters    10
+xtol          1e-10
+outlev        0
+outmode       0
+honorbnds     1
+maxit         200
+maxtime_real  300
