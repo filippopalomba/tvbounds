@@ -54,3 +54,10 @@ context on why this does not affect checking:
 ## Downstream dependencies
 
 There are no downstream dependencies (new submission).
+
+## URL and BugReports
+
+DESCRIPTION deliberately declares no `URL` or `BugReports`. The development
+repository is currently private, so advertising it would place URLs on the
+package page that resolve to 404 for users. Both fields will be added in the
+next release, once the repository is public.

@@ -1,9 +1,9 @@
-^\.git$
-^\.gitignore$
+^\.git
 ^\.[^/]+$
 ^\.github$
 ^LICENSE\.md$
 ^README\.Rmd$
+^README\.md$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
