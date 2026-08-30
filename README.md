@@ -6,7 +6,7 @@ Shares."
 
 The [package vignette](https://cran.r-project.org/web/packages/tvbounds/vignettes/tvbounds.html)
 explains what the package does and walks through every functionality in
-detail; the examples below are condensed from it.
+detail. The examples below are a condensed version of the ones in the vignette.
 
 ## Installation
 
@@ -15,22 +15,19 @@ detail; the examples below are condensed from it.
 remotes::install_github("filippopalomba/tvbounds", build_vignettes = TRUE)
 ```
 
-While this repository is private, authenticate first — for instance store a
-GitHub token with `gitcreds::gitcreds_set()`, or set the `GITHUB_PAT`
-environment variable. Only `ggplot2` and `withr` (plus base R) are required
+Only `ggplot2` and `withr` (plus base R) are required
 at runtime; `build_vignettes = TRUE` additionally needs `knitr` and
 `rmarkdown`.
 
 ## KNITRO requirement for structural counterfactuals
 
-`tvbounds_counterfactual()` — and only that function — solves its
+`tvbounds_counterfactual()` solves its
 optimization problems in Julia through the commercial
 [Artelys KNITRO](https://www.artelys.com/solvers/knitro/) solver, so it
 requires Julia (>= 1.9), the `JuliaCall` R package, and a valid KNITRO
 license. **Students can request a free one-year KNITRO license** through
 Artelys' academic program on the same page. The package checks for KNITRO
-once per R session, on the first call; every other function is pure R and
-needs none of this.
+once per R session, on the first call. 
 
 ## Quick tour
 
@@ -134,7 +131,7 @@ plot(fit_cf)
 If you use `tvbounds`, please cite:
 
 Palomba, F. (2026). "Sensitivity Analysis in Population Shares." Working
-paper. <https://filippopalomba.github.io/#jmp>
+paper.
 
 ## License
 
