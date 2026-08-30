@@ -22,8 +22,8 @@ addressing the three points raised in the CRAN review of 2026-08-21:
 ## Test environments
 
 * local: macOS (Apple Silicon, arm64, Darwin 25.5), R 4.5.2
-* win-builder: R-devel and R-release
-* R-hub: Linux (R-devel)
+* win-builder: Windows, R-devel and R-release
+* macOS builder: macOS (arm64), R-release
 
 ## R CMD check results
 
