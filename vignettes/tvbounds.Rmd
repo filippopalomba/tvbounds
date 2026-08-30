@@ -197,50 +197,51 @@ fit_tv
 The estimand is the average treatment effect for the *always-observed*
 subpopulation, the units that would respond under either arm:
 $$
-\tau_{\mathsf{RCT}}(P_{*})
-  := \mathbb{E}_{P_{*}}[Y(1) - Y(0) \mid S(0) = 1, S(1) = 1],
+\tau_0
+  := \mathbb{E}_{P_0}[Y(1) - Y(0) \mid S(0) = 1, S(1) = 1],
 $$
 where $Y(d)$ and $S(d)$ are the potential outcome and the potential response
-indicator under treatment $d$, and $P_{*}$ is the baseline distribution of
-the data. Under random assignment and the monotonicity assumption of Lee
+indicator under treatment $d$, and $P_0$ is the distribution of the
+data. Under random assignment and the monotonicity assumption of Lee
 (2009) there are no defiers, so that the outcome distribution of the treated
-respondents, $P_{*,\mathsf{T}}$, is a mixture of the outcome distribution of
-the compliers, $P_{*,\mathsf{C}}$, the units that respond only because they
-were treated, and that of the always-observed units, $P_{*,\mathsf{AO}}$:
+respondents, $P_{\mathsf{T}}$, is a mixture of the outcome distribution of
+the compliers, $P_{\mathsf{C}}$, the units that respond only because they
+were treated, and that of the always-observed units, $P_{\mathsf{AO}}$:
 $$
-P_{*,\mathsf{T}} = p_0 P_{*,\mathsf{C}} + (1 - p_0) P_{*,\mathsf{AO}},
+P_{\mathsf{T}} = \pi P_{\mathsf{C}} + (1 - \pi) P_{\mathsf{AO}},
 \qquad
-p_0 = 1 - \frac{\pi_0}{\pi_1}.
+\pi = 1 - \frac{r_0}{r_1}.
 $$
-The mixing weight $p_0$, the complier share among treated respondents, is
-identified by comparing the response rates of the two arms, $\pi_1$ and
-$\pi_0$, and is reported as `p_star`:
+The mixing weight $\pi$, the complier share among treated respondents, is
+identified by comparing the response rates of the two arms, $r_1$ and
+$r_0$; the package reports the complier share $\pi$ as `p_star`:
 
 ```{r rct-pstar}
 fit_tv$details$p_star
 ```
 
-Neither $P_{*,\mathsf{C}}$ nor $P_{*,\mathsf{AO}}$ is identified, and
+Neither $P_{\mathsf{C}}$ nor $P_{\mathsf{AO}}$ is identified, and
 missingness completely at random requires that the two coincide. A natural
 way to relax it is thus to let them lie at most $\delta$ apart in total
-variation, $\mathsf{TV}(P_{*,\mathsf{C}}, P_{*,\mathsf{AO}}) \le \delta$, so
+variation, $\mathsf{TV}(P_{\mathsf{C}} \,\|\, P_{\mathsf{AO}}) \le \delta$, so
 that the two outcome distributions may disagree on at most a
 $\delta$-fraction of their mass. Rescaling that restriction onto the
-identified law $P_{*,\mathsf{T}}$ pins down one of the two distributions and
-lets $P_{*,\mathsf{C}}$ range over the robustness set
+identified law $P_{\mathsf{T}}$ pins down one of the two distributions and
+lets the candidate complier distribution $Q$, of which $P_{\mathsf{C}}$ is
+one, range over the robustness set
 $$
-\mathcal{P}_{\mathsf{RCT}}(\delta, P_{*,\mathsf{T}})
-  := \{P \in \Delta(\mathcal{Y}) :
-       \mathsf{TV}(P, P_{*,\mathsf{T}}) \le \delta (1 - p_0), \;\;
-       p_0 P \le P_{*,\mathsf{T}}\},
+\mathcal{Q}_{\mathsf{C}}(\delta)
+  := \{Q \in \Delta(\mathcal{Y}) :
+       \mathsf{TV}(Q \,\|\, P_{\mathsf{T}}) \le (1 - \pi)\delta, \;\;
+       \pi Q \le P_{\mathsf{T}}\},
 $$
 where $\Delta(\mathcal{Y})$ collects the distributions on the outcome space
 and the second restriction encodes the mixture structure of the treated arm.
-The resulting sensitivity bounds $\underline{\tau}_{\mathsf{TV}}(\delta)$ and
-$\overline{\tau}_{\mathsf{TV}}(\delta)$ on $\tau_{\mathsf{RCT}}(P_{*})$
-admit a closed form, as trimmed means of $P_{*,\mathsf{T}}$ net of the
+The resulting sensitivity bounds $\underline{\tau}(\delta)$ and
+$\overline{\tau}(\delta)$ on $\tau_0$
+admit a closed form, as trimmed means of $P_{\mathsf{T}}$ net of the
 control mean
-$\mu_0^{\mathsf{AO}}(P_{*}) = \mathbb{E}_{P_{*}}[Y \mid D = 0, S = 1]$,
+$\mu^{\mathsf{AO}}(0) = \mathbb{E}_{P_0}[Y \mid D = 0, S = 1]$,
 which is identified because, absent defiers, the control respondents are
 always-observed units. The `bounds` data frame carries one row per budget,
 with bootstrap standard errors and the outer percentile confidence interval:
@@ -263,8 +264,8 @@ plot(fit_tv)
 The two endpoints of the budget grid anchor the interpretation. At
 $\delta = 0$ the baseline is the only admissible distribution, the two
 unobserved outcome distributions coincide,
-$P_{*,\mathsf{C}} = P_{*,\mathsf{AO}}$, and the bounds collapse to the
-difference in means among respondents $\tau_{\mathsf{MCAR}}(P_{*})$, the
+$P_{\mathsf{C}} = P_{\mathsf{AO}}$, and the bounds collapse to the
+difference in means among respondents $\tau_{\mathsf{MCAR}}(P_0)$, the
 point estimate one would report under missingness completely at random:
 
 ```{r rct-endpoint-0}
@@ -295,11 +296,11 @@ computed internally even when the `delta` grid omits them.
 
 `neighborhood = "contamination"` replaces the total variation restriction
 with the one-sided mixture restriction
-$P_{*,\mathsf{C}} = (1 - \delta) P_{*,\mathsf{AO}} + \delta R$ for some
+$P_{\mathsf{C}} = (1 - \delta) P_{\mathsf{AO}} + \delta R$ for some
 distribution $R$, equivalently
-$P_{*,\mathsf{C}} \ge (1 - \delta) P_{*,\mathsf{AO}}$ as measures. Since
+$P_{\mathsf{C}} \ge (1 - \delta) P_{\mathsf{AO}}$ as measures. Since
 every such mixture lies within total variation distance $\delta$ of
-$P_{*,\mathsf{AO}}$, the contamination bounds are weakly tighter at every
+$P_{\mathsf{AO}}$, the contamination bounds are weakly tighter at every
 budget, while the two sets of bounds share both endpoints, the baseline at
 $\delta = 0$ and the Lee bounds at $\delta = 1$:
 
@@ -345,7 +346,7 @@ Treatment is assigned at the village level, so resampling villages is the
 appropriate bootstrap. Passing `cluster` makes each replicate draw whole
 clusters with replacement. Every replicate also redraws the arm-specific
 response rates, so that the standard errors reflect the estimation
-uncertainty in the complier share $p_0$, which a plug-in formula would omit.
+uncertainty in the complier share $\pi$, which a plug-in formula would omit.
 
 ```{r rct-cluster}
 fit_cl <- tvbounds_attrition(rct,
@@ -368,25 +369,25 @@ When `covariates` is supplied, units are stratified on the interaction of
 the covariate columns, which plays the role of a discrete covariate $X$ with
 support $\mathcal{X}$, and cells with fewer than `min_obs` observed outcomes
 in either arm are dropped with a warning. Within a cell the complier share
-$p_0(x)$ and the outcome distribution of the treated respondents
-$P_{*,\mathsf{T}}(x)$ are identified, and the cell-level construction is the
+$\pi(x)$ and the outcome distribution of the treated respondents
+$P_{\mathsf{T}}(x)$ are identified, and the cell-level construction is the
 one of Section 2.2.
 
 The budget can then be allocated across cells in two ways. The
 within-stratum ("pointwise") restriction imposes
-$\mathsf{TV}(P_{*,\mathsf{C}}(x), P_{*,\mathsf{AO}}(x)) \le \delta$ in every
+$\mathsf{TV}(P_{\mathsf{C}}(x) \,\|\, P_{\mathsf{AO}}(x)) \le \delta$ in every
 cell separately, giving one robustness set
-$\mathcal{P}^{\mathsf{pw}}_{\mathsf{RCT}}(\delta, P_{*,\mathsf{T}}(x))$ per
+$\mathcal{Q}^{\mathsf{pw}}_{\mathsf{C}}(\delta; x)$ per
 cell, whereas the pooled restriction caps only the average departure,
 $$
-\int_{\mathcal{X}} \mathsf{TV}(P_{*,\mathsf{C}}(x), P_{*,\mathsf{AO}}(x))
-  \, \mathrm{d}P_{*,X \mid \mathsf{AO}}(x) \le \delta ,
+\int_{\mathcal{X}} \mathsf{TV}(P_{\mathsf{C}}(x) \,\|\, P_{\mathsf{AO}}(x))
+  \, \mathrm{d}P_{X \mid \mathsf{AO}}(x) \le \delta ,
 $$
 and so allows heterogeneity across cells inside the single robustness set
-$\mathcal{P}_{\mathsf{RCT},X}(\delta, P_{*,\mathsf{T}})$. Under the total
+$\mathcal{Q}_{\mathsf{C},X}(\delta)$. Under the total
 variation neighborhood the reported bounds are the *pooled* (joint) bounds
-of the paper, $\underline{\tau}_{\mathsf{TV},X}(\delta)$ and
-$\overline{\tau}_{\mathsf{TV},X}(\delta)$, for which a **single** budget
+of the paper, $\underline{\tau}_{X}(\delta)$ and
+$\overline{\tau}_{X}(\delta)$, for which a **single** budget
 $\delta$ is allocated optimally across the covariate cells rather than
 imposed cell by cell: the least favorable distributions concentrate the
 misspecified mass in the cells in which it moves the aggregate effect the
@@ -402,10 +403,10 @@ fit_x$details$pooled$strata
 The per-stratum table records the weight of each retained cell, that is its
 share of control respondents, which under monotonicity is the covariate
 distribution of the always-observed population,
-$P_{*,X \mid D = 0, S = 1} = P_{*,X \mid \mathsf{AO}}$, together with the
+$P_{X \mid D = 0, S = 1} = P_{X \mid \mathsf{AO}}$, together with the
 complier share and the sample sizes. The within-stratum reference curve
-$\underline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)$,
-$\overline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)$ is kept in
+$\underline{\tau}^{\mathsf{pw}}_{X}(\delta)$,
+$\overline{\tau}^{\mathsf{pw}}_{X}(\delta)$ is kept in
 `details$pooled$pw`. The pooled bounds contain it by construction, since a
 common budget in every cell is one of the ways of spending the average one,
 and the two coincide at both endpoints:
@@ -437,8 +438,7 @@ those bounds remain weakly inside the total variation ones at every budget.
 `summary()`, an alias of `tvbounds_summary()`, condenses the bounds into the
 summary measures of the paper. These are stated for generic bound paths
 $\underline{\tau}(\delta)$ and $\overline{\tau}(\delta)$, here the attrition
-paths $\underline{\tau}_{\mathsf{TV}}(\delta)$ and
-$\overline{\tau}_{\mathsf{TV}}(\delta)$ of Section 2.2, and are evaluated on
+bounds of Section 2.2, and are evaluated on
 the path adjacent to the reference value $\tau_{\star}$, which is set
 through the argument `tau_star` and defaults to 0; here that is the lower
 path, since the baseline estimate is positive:
@@ -547,8 +547,8 @@ $z_i = \sum_{k} w_{ik} v_k$ at the realized sector shocks `g0`. The
 researcher
 postulates that the shocks are i.i.d. standard normal and recenters using
 `S = 80` counterfactual shock configurations $v^{(1)}, \dots, v^{(S)}$ drawn
-from that postulated process, the columns of `G`. The matrix `F` collects
-the formula evaluated at each configuration, so that `F[i, s]` is
+from that postulated process, the columns of `G`. The matrix `Fmat` collects
+the formula evaluated at each configuration, so that `Fmat[i, s]` is
 $f_i(v^{(s)};w)$, the instrument of region `i` under the `s`-th draw. The
 realized shocks are drawn with a small positive mean, so that the postulated
 mean-zero assignment process is itself mildly misspecified, and the outcome
@@ -575,7 +575,7 @@ y    <- 0.5 * x + 0.4 * as.vector(W %*% e_s) + 0.5 * e_y
 the realized instrument $z_i$, and the matrix of counterfactual draws.
 Optionally, `p` supplies the probabilities that $P_{*}$ attaches to the
 configurations, uniform by default, and `controls` collects the covariates
-to be partialled out of `y`, `x`, `z`, and every column of `F`, in view of
+to be partialled out of `y`, `x`, `z`, and every column of `Fmat`, in view of
 the Frisch–Waugh–Lovell theorem. As in the paper, all analyses are conducted
 conditionally on the realized sample, so that the bounds are deterministic
 and no standard errors or confidence intervals are reported.

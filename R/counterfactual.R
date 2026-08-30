@@ -443,9 +443,11 @@ tvbounds_counterfactual <- function(moments, d, theta_lb, theta_ub,
   opts <- .tvb_resolve_opt(control)
 
   # ---- local RNG (no global side effects) ----------------------------
-  old_seed <- .tvb_preserve_seed()
-  on.exit(.tvb_restore_seed(old_seed), add = TRUE)
-  if (!is.null(seed)) set.seed(seed)
+  if (!is.null(seed)) {
+    withr::local_seed(seed)
+  } else {
+    withr::local_preserve_seed()
+  }
 
   # ---- Julia session (lazy; once per R session) ----------------------
   .tvb_julia_setup(verbose = verbose)

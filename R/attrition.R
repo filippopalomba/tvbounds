@@ -5,15 +5,15 @@
 #'
 #' Computes sensitivity bounds on the average treatment effect for the
 #' always-observed subpopulation of a randomized experiment with attrition,
-#' following Palomba (2026). Writing \eqn{P_{*}}{P_*} for the baseline
+#' following Palomba (2026). Writing \eqn{P_0}{P_0} for the
 #' distribution of the data, the estimand is
-#' \deqn{\tau_{\mathsf{RCT}}(P_{*}) := \mathbb{E}_{P_{*}}[Y(1) - Y(0) \mid S(0) = 1, S(1) = 1],}{tau_RCT(P_*) := E_{P_*}[Y(1) - Y(0) | S(0) = 1, S(1) = 1],}
+#' \deqn{\tau_0 := \mathbb{E}_{P_0}[Y(1) - Y(0) \mid S(0) = 1, S(1) = 1],}{tau_0 := E_{P_0}[Y(1) - Y(0) | S(0) = 1, S(1) = 1],}
 #' the average treatment effect on the units that respond under either arm.
 #' The bounds are indexed by a budget \eqn{\delta \in [0, 1]}{delta in [0, 1]},
 #' supplied through `delta`, which caps the total variation distance between
 #' the outcome distribution of the compliers (units that respond only under
 #' treatment) and that of the always-observed units,
-#' \eqn{\mathsf{TV}(P_{*,\mathsf{C}}, P_{*,\mathsf{AO}}) \le \delta}{TV(P_{*,C}, P_{*,AO}) <= delta}.
+#' \eqn{\mathsf{TV}(P_{\mathsf{C}} \,\|\, P_{\mathsf{AO}}) \le \delta}{TV(P_C || P_AO) <= delta}.
 #' At \eqn{\delta = 0}{delta = 0} the two distributions coincide and the
 #' bounds collapse to the baseline difference in means among respondents (the
 #' estimand under missingness completely at random); at
@@ -35,7 +35,7 @@
 #' \eqn{(S(0) = 1, S(1) = 1)}, never-observed units
 #' \eqn{(S(0) = 0, S(1) = 0)}, compliers \eqn{(S(0) = 0, S(1) = 1)} and
 #' defiers \eqn{(S(0) = 1, S(1) = 0)}; the estimand
-#' \eqn{\tau_{\mathsf{RCT}}(P_{*})}{tau_RCT(P_*)} is the average treatment
+#' \eqn{\tau_0}{tau_0} is the average treatment
 #' effect on the first of these groups.
 #'
 #' Two assumptions are maintained. Random assignment enters as
@@ -44,87 +44,87 @@
 #' \eqn{S(1) \ge S(0)}{S(1) >= S(0)} almost surely, labelled (Mono) —
 #' treatment never causes a unit that would respond under control to attrit —
 #' rules out defiers. Under (Mono) the outcome distribution of the observed
-#' treated, \eqn{P_{*,\mathsf{T}}}{P_{*,T}}, is a mixture of the complier and
+#' treated, \eqn{P_{\mathsf{T}}}{P_T}, is a mixture of the complier and
 #' always-observed outcome distributions,
-#' \deqn{P_{*,\mathsf{T}} = p_0 P_{*,\mathsf{C}} + (1 - p_0) P_{*,\mathsf{AO}}, \qquad p_0 = 1 - \frac{\pi_0}{\pi_1},}{P_{*,T} = p_0 P_{*,C} + (1 - p_0) P_{*,AO},  p_0 = 1 - pi_0 / pi_1,}
-#' where \eqn{\pi_1 := P_{*}[S = 1 \mid D = 1]}{pi_1 := P_*[S = 1 | D = 1]}
-#' and \eqn{\pi_0 := P_{*}[S = 1 \mid D = 0]}{pi_0 := P_*[S = 1 | D = 0]} are
-#' the arm-specific response rates and \eqn{p_0} is the complier share. The
+#' \deqn{P_{\mathsf{T}} = \pi P_{\mathsf{C}} + (1 - \pi) P_{\mathsf{AO}}, \qquad \pi = 1 - \frac{r_0}{r_1},}{P_T = pi P_C + (1 - pi) P_AO,  pi = 1 - r_0 / r_1,}
+#' where \eqn{r_1 := P_0[S = 1 \mid D = 1]}{r_1 := P_0[S = 1 | D = 1]}
+#' and \eqn{r_0 := P_0[S = 1 \mid D = 0]}{r_0 := P_0[S = 1 | D = 0]} are
+#' the arm-specific response rates and \eqn{\pi}{pi} is the complier share. The
 #' always-observed control mean is identified,
-#' \eqn{\mu_0^{\mathsf{AO}}(P_{*}) = \mathbb{E}_{P_{*}}[Y \mid D = 0, S = 1]}{mu_0^AO(P_*) = E_{P_*}[Y | D = 0, S = 1]},
+#' \eqn{\mu^{\mathsf{AO}}(0) = \mathbb{E}_{P_0}[Y \mid D = 0, S = 1]}{mu^AO(0) = E_{P_0}[Y | D = 0, S = 1]},
 #' whereas the always-observed treated mean
-#' \eqn{\mu_1^{\mathsf{AO}}(P_{*})}{mu_1^AO(P_*)} is only partially
-#' identified; the bounds on \eqn{\tau_{\mathsf{RCT}}(P_{*})}{tau_RCT(P_*)}
+#' \eqn{\mu^{\mathsf{AO}}(1)}{mu^AO(1)} is only partially
+#' identified; the bounds on \eqn{\tau_0}{tau_0}
 #' follow by subtracting the identified control mean.
 #'
 #' The complier share is estimated by
-#' \eqn{\widehat{p}_0 = \max\{1 - \widehat{\pi}_0 / \widehat{\pi}_1, 0\}}{p_0-hat = max{1 - pi_0-hat / pi_1-hat, 0}}
+#' \eqn{\widehat{\pi} = \max\{1 - \widehat{r}_0 / \widehat{r}_1, 0\}}{pi-hat = max{1 - r_0-hat / r_1-hat, 0}}
 #' and returned as `details$p_star`, and the estimated response rates
-#' \eqn{(\widehat{\pi}_0, \widehat{\pi}_1)}{(pi_0-hat, pi_1-hat)} as
-#' `details$response_rate`. A negative unconstrained estimate of \eqn{p_0} is
+#' \eqn{(\widehat{r}_0, \widehat{r}_1)}{(r_0-hat, r_1-hat)} as
+#' `details$response_rate`. A negative unconstrained estimate of \eqn{\pi}{pi} is
 #' sampling noise under (Mono) and is projected to zero, in which case the
 #' bounds collapse to the baseline difference in means at every budget.
 #'
 #' @section Neighborhoods:
 #' Two robustness sets are available through `neighborhood`. Both are indexed
 #' by the budget \eqn{\delta}{delta} and both restrict the unobserved
-#' complier outcome distribution \eqn{P_{*,\mathsf{C}}}{P_{*,C}} relative to
+#' complier outcome distribution \eqn{P_{\mathsf{C}}}{P_C} relative to
 #' the unobserved always-observed outcome distribution
-#' \eqn{P_{*,\mathsf{AO}}}{P_{*,AO}}:
+#' \eqn{P_{\mathsf{AO}}}{P_AO}:
 #'
 #' * `"tv"` (default): the total variation neighborhood of the paper,
-#'   \eqn{\mathsf{TV}(P_{*,\mathsf{C}}, P_{*,\mathsf{AO}}) \le \delta}{TV(P_{*,C}, P_{*,AO}) <= delta},
+#'   \eqn{\mathsf{TV}(P_{\mathsf{C}} \,\|\, P_{\mathsf{AO}}) \le \delta}{TV(P_C || P_AO) <= delta},
 #'   so the two distributions may disagree on at most a
 #'   \eqn{\delta}{delta} fraction of their mass.
 #' * `"contamination"`: a one-sided strengthening in which
-#'   \eqn{P_{*,\mathsf{C}}}{P_{*,C}} lies in the contamination neighborhood
-#'   of \eqn{P_{*,\mathsf{AO}}}{P_{*,AO}} (Huber 1964), that is
-#'   \eqn{P_{*,\mathsf{C}} = (1 - \delta) P_{*,\mathsf{AO}} + \delta R}{P_{*,C} = (1 - delta) P_{*,AO} + delta R}
+#'   \eqn{P_{\mathsf{C}}}{P_C} lies in the contamination neighborhood
+#'   of \eqn{P_{\mathsf{AO}}}{P_AO} (Huber 1964), that is
+#'   \eqn{P_{\mathsf{C}} = (1 - \delta) P_{\mathsf{AO}} + \delta R}{P_C = (1 - delta) P_AO + delta R}
 #'   for some distribution \eqn{R}, equivalently
-#'   \eqn{P_{*,\mathsf{C}} \ge (1 - \delta) P_{*,\mathsf{AO}}}{P_{*,C} >= (1 - delta) P_{*,AO}}
+#'   \eqn{P_{\mathsf{C}} \ge (1 - \delta) P_{\mathsf{AO}}}{P_C >= (1 - delta) P_AO}
 #'   as measures: a \eqn{(1 - \delta)}{(1 - delta)}-share of the compliers has
 #'   outcomes distributed exactly like the always-observed units, and only the
 #'   remaining \eqn{\delta}{delta}-share may differ arbitrarily.
 #'
 #' Under total variation the rescaling identity
-#' \eqn{\mathsf{TV}(P_{*,\mathsf{C}}, P_{*,\mathsf{T}}) = (1 - p_0)\,\mathsf{TV}(P_{*,\mathsf{C}}, P_{*,\mathsf{AO}})}{TV(P_{*,C}, P_{*,T}) = (1 - p_0) TV(P_{*,C}, P_{*,AO})}
+#' \eqn{\mathsf{TV}(P_{\mathsf{C}} \,\|\, P_{\mathsf{T}}) = (1 - \pi)\,\mathsf{TV}(P_{\mathsf{C}} \,\|\, P_{\mathsf{AO}})}{TV(P_C || P_T) = (1 - pi) TV(P_C || P_AO)}
 #' recenters the restriction on the identified distribution
-#' \eqn{P_{*,\mathsf{T}}}{P_{*,T}}, so that
-#' \eqn{P_{*,\mathsf{C}}}{P_{*,C}} ranges over the robustness set
-#' \deqn{\mathcal{P}_{\mathsf{RCT}}(\delta, P_{*,\mathsf{T}}) := \{P \in \Delta(\mathcal{Y}) : \mathsf{TV}(P, P_{*,\mathsf{T}}) \le \delta(1 - p_0), \ p_0 P \le P_{*,\mathsf{T}}\},}{P_RCT(delta, P_{*,T}) := {P in Delta(Y) : TV(P, P_{*,T}) <= delta (1 - p_0), p_0 P <= P_{*,T}},}
+#' \eqn{P_{\mathsf{T}}}{P_T}, so that the candidate complier distributions
+#' \eqn{Q}{Q}, among which \eqn{P_{\mathsf{C}}}{P_C} lies, range over the robustness set
+#' \deqn{\mathcal{Q}_{\mathsf{C}}(\delta) := \{Q \in \Delta(\mathcal{Y}) : \mathsf{TV}(Q \,\|\, P_{\mathsf{T}}) \le (1 - \pi)\delta, \ \pi Q \le P_{\mathsf{T}}\},}{Q_C(delta) := {Q in Delta(Y) : TV(Q || P_T) <= (1 - pi) delta, pi Q <= P_T},}
 #' where \eqn{\Delta(\mathcal{Y})}{Delta(Y)} denotes the distributions on the
 #' outcome space and the second restriction is the mixture structure of the
 #' observed treated arm. The resulting sensitivity bounds
-#' \eqn{\underline{\tau}_{\mathsf{TV}}(\delta)}{tau_TV-lower(delta)} and
-#' \eqn{\overline{\tau}_{\mathsf{TV}}(\delta)}{tau_TV-upper(delta)} on
-#' \eqn{\tau_{\mathsf{RCT}}(P_{*})}{tau_RCT(P_*)} are available in closed
-#' form as trimmed means of \eqn{P_{*,\mathsf{T}}}{P_{*,T}}. Writing
-#' \eqn{F^{-1}_{P_{*,\mathsf{T}}}}{F^{-1}_{P_{*,T}}} for the quantile
+#' \eqn{\underline{\tau}(\delta)}{tau-lower(delta)} and
+#' \eqn{\overline{\tau}(\delta)}{tau-upper(delta)} on
+#' \eqn{\tau_0}{tau_0} are available in closed
+#' form as trimmed means of \eqn{P_{\mathsf{T}}}{P_T}. Writing
+#' \eqn{F^{-1}_{P_{\mathsf{T}}}}{F^{-1}_{P_T}} for the quantile
 #' function of the observed treated outcomes and
-#' \deqn{s_{\mathsf{L}}(\delta) := F^{-1}_{P_{*,\mathsf{T}}}(p_0 \delta), \qquad s_{\mathsf{U}}(\delta) := F^{-1}_{P_{*,\mathsf{T}}}(1 - (1 - p_0) \delta),}{s_L(delta) := F^{-1}_{P_{*,T}}(p_0 delta),  s_U(delta) := F^{-1}_{P_{*,T}}(1 - (1 - p_0) delta),}
+#' \deqn{s_{\mathsf{L}}(\delta) := F^{-1}_{P_{\mathsf{T}}}(\pi \delta), \qquad s_{\mathsf{U}}(\delta) := F^{-1}_{P_{\mathsf{T}}}(1 - (1 - \pi) \delta),}{s_L(delta) := F^{-1}_{P_T}(pi delta),  s_U(delta) := F^{-1}_{P_T}(1 - (1 - pi) delta),}
 #' the upper bound is
-#' \deqn{\overline{\tau}_{\mathsf{TV}}(\delta) = \mathbb{E}_{P_{*,\mathsf{T}}}[Y \mathbf{1}\{s_{\mathsf{L}}(\delta) < Y < s_{\mathsf{U}}(\delta)\}] + \frac{1}{1 - p_0} \mathbb{E}_{P_{*,\mathsf{T}}}[Y \mathbf{1}\{Y \ge s_{\mathsf{U}}(\delta)\}] - \mu_0^{\mathsf{AO}}(P_{*}),}{tau_TV-upper(delta) = E_{P_{*,T}}[Y 1{s_L(delta) < Y < s_U(delta)}] + (1 / (1 - p_0)) E_{P_{*,T}}[Y 1{Y >= s_U(delta)}] - mu_0^AO(P_*),}
+#' \deqn{\overline{\tau}(\delta) = \mathbb{E}_{P_{\mathsf{T}}}[Y \mathbf{1}\{s_{\mathsf{L}}(\delta) < Y < s_{\mathsf{U}}(\delta)\}] + \frac{1}{1 - \pi} \mathbb{E}_{P_{\mathsf{T}}}[Y \mathbf{1}\{Y \ge s_{\mathsf{U}}(\delta)\}] - \mu^{\mathsf{AO}}(0),}{tau-upper(delta) = E_{P_T}[Y 1{s_L(delta) < Y < s_U(delta)}] + (1 / (1 - pi)) E_{P_T}[Y 1{Y >= s_U(delta)}] - mu^AO(0),}
 #' and the lower bound is obtained symmetrically, trimming at
-#' \eqn{t_{\mathsf{L}}(\delta) := F^{-1}_{P_{*,\mathsf{T}}}((1 - p_0) \delta)}{t_L(delta) := F^{-1}_{P_{*,T}}((1 - p_0) delta)}
+#' \eqn{t_{\mathsf{L}}(\delta) := F^{-1}_{P_{\mathsf{T}}}((1 - \pi) \delta)}{t_L(delta) := F^{-1}_{P_T}((1 - pi) delta)}
 #' and
-#' \eqn{t_{\mathsf{U}}(\delta) := F^{-1}_{P_{*,\mathsf{T}}}(1 - p_0 \delta)}{t_U(delta) := F^{-1}_{P_{*,T}}(1 - p_0 delta)}.
+#' \eqn{t_{\mathsf{U}}(\delta) := F^{-1}_{P_{\mathsf{T}}}(1 - \pi \delta)}{t_U(delta) := F^{-1}_{P_T}(1 - pi delta)}.
 #'
 #' Under contamination, combining the same mixture identity with
-#' \eqn{P_{*,\mathsf{C}} \ge (1 - \delta) P_{*,\mathsf{AO}}}{P_{*,C} >= (1 - delta) P_{*,AO}}
+#' \eqn{P_{\mathsf{C}} \ge (1 - \delta) P_{\mathsf{AO}}}{P_C >= (1 - delta) P_AO}
 #' pins the density
-#' \eqn{r := \mathrm{d}P_{*,\mathsf{C}} / \mathrm{d}P_{*,\mathsf{T}}}{r := dP_{*,C} / dP_{*,T}}
-#' between \eqn{(1 - \delta) / (1 - \delta p_0)}{(1 - delta) / (1 - delta p_0)}
-#' and \eqn{1 / p_0}{1 / p_0}, and the bounds are again trimmed means of
-#' \eqn{P_{*,\mathsf{T}}}{P_{*,T}}, now with effective trimming mass
-#' \eqn{\delta p_0}{delta p_0}. The contamination neighborhood is contained
+#' \eqn{w := \mathrm{d}P_{\mathsf{C}} / \mathrm{d}P_{\mathsf{T}}}{w := dP_C / dP_T}
+#' between \eqn{(1 - \delta) / (1 - \delta \pi)}{(1 - delta) / (1 - delta pi)}
+#' and \eqn{1 / \pi}{1 / pi}, and the bounds are again trimmed means of
+#' \eqn{P_{\mathsf{T}}}{P_T}, now with effective trimming mass
+#' \eqn{\delta \pi}{delta pi}. The contamination neighborhood is contained
 #' in the total variation one at every budget, so its bounds are weakly
 #' tighter, and the two families share the same endpoints: the baseline at
 #' \eqn{\delta = 0}{delta = 0} and, at \eqn{\delta = 1}{delta = 1}, the Lee
 #' (2009) bounds
-#' \eqn{\underline{\tau}_{\mathsf{Lee}} = \mathbb{E}_{P_{*,\mathsf{T}}}[Y \mid Y \le y_{1 - p_0}] - \mu_0^{\mathsf{AO}}(P_{*})}{tau_Lee-lower = E_{P_{*,T}}[Y | Y <= y_{1 - p_0}] - mu_0^AO(P_*)}
+#' \eqn{\underline{\tau}_{\mathsf{Lee}} = \mathbb{E}_{P_{\mathsf{T}}}[Y \mid Y \le y_{1 - \pi}] - \mu^{\mathsf{AO}}(0)}{tau_Lee-lower = E_{P_T}[Y | Y <= y_{1 - pi}] - mu^AO(0)}
 #' and
-#' \eqn{\overline{\tau}_{\mathsf{Lee}} = \mathbb{E}_{P_{*,\mathsf{T}}}[Y \mid Y \ge y_{p_0}] - \mu_0^{\mathsf{AO}}(P_{*})}{tau_Lee-upper = E_{P_{*,T}}[Y | Y >= y_{p_0}] - mu_0^AO(P_*)},
-#' where \eqn{y_u := F^{-1}_{P_{*,\mathsf{T}}}(u)}{y_u := F^{-1}_{P_{*,T}}(u)}.
+#' \eqn{\overline{\tau}_{\mathsf{Lee}} = \mathbb{E}_{P_{\mathsf{T}}}[Y \mid Y \ge y_{\pi}] - \mu^{\mathsf{AO}}(0)}{tau_Lee-upper = E_{P_T}[Y | Y >= y_{pi}] - mu^AO(0)},
+#' where \eqn{y_u := F^{-1}_{P_{\mathsf{T}}}(u)}{y_u := F^{-1}_{P_T}(u)}.
 #'
 #' Both bound families are monotone in the budget by construction: the
 #' robustness sets are nested in \eqn{\delta}{delta}.
@@ -137,25 +137,25 @@
 #' retained cells are weighted by their control-respondent shares, which
 #' under (Mono) are the covariate distribution of the always-observed
 #' population,
-#' \eqn{P_{*,X \mid D = 0, S = 1} = P_{*,X \mid \mathsf{AO}}}{P_{*,X | D = 0, S = 1} = P_{*,X | AO}}.
-#' Within a cell the complier share \eqn{p_0(x)}{p_0(x)} and the observed
+#' \eqn{P_{X \mid D = 0, S = 1} = P_{X \mid \mathsf{AO}}}{P_{X | D = 0, S = 1} = P_{X | AO}}.
+#' Within a cell the complier share \eqn{\pi(x)}{pi(x)} and the observed
 #' treated outcome distribution
-#' \eqn{P_{*,\mathsf{T}}(x)}{P_{*,T}(x)} are identified, and the cell-level
+#' \eqn{P_{\mathsf{T}}(x)}{P_T(x)} are identified, and the cell-level
 #' construction is the one above.
 #'
 #' Two ways of spending the budget across cells are distinguished. The
 #' within-stratum ("pointwise") restriction imposes
-#' \eqn{\mathsf{TV}(P_{*,\mathsf{C}}(x), P_{*,\mathsf{AO}}(x)) \le \delta}{TV(P_{*,C}(x), P_{*,AO}(x)) <= delta}
+#' \eqn{\mathsf{TV}(P_{\mathsf{C}}(x) \,\|\, P_{\mathsf{AO}}(x)) \le \delta}{TV(P_C(x) || P_AO(x)) <= delta}
 #' in every cell separately, giving one robustness set
-#' \eqn{\mathcal{P}^{\mathsf{pw}}_{\mathsf{RCT}}(\delta, P_{*,\mathsf{T}}(x))}{P_RCT^pw(delta, P_{*,T}(x))}
+#' \eqn{\mathcal{Q}^{\mathsf{pw}}_{\mathsf{C}}(\delta; x)}{Q_C^pw(delta; x)}
 #' per cell, whereas the pooled restriction caps only the average departure,
-#' \deqn{\int_{\mathcal{X}} \mathsf{TV}(P_{*,\mathsf{C}}(x), P_{*,\mathsf{AO}}(x)) \, \mathrm{d}P_{*,X \mid \mathsf{AO}}(x) \le \delta,}{integral over calX of TV(P_{*,C}(x), P_{*,AO}(x)) dP_{*,X | AO}(x) <= delta,}
+#' \deqn{\int_{\mathcal{X}} \mathsf{TV}(P_{\mathsf{C}}(x) \,\|\, P_{\mathsf{AO}}(x)) \, \mathrm{d}P_{X \mid \mathsf{AO}}(x) \le \delta,}{integral over calX of TV(P_C(x) || P_AO(x)) dP_{X | AO}(x) <= delta,}
 #' and so allows heterogeneity across cells inside the single robustness set
-#' \eqn{\mathcal{P}_{\mathsf{RCT},X}(\delta, P_{*,\mathsf{T}})}{P_{RCT,X}(delta, P_{*,T})}.
+#' \eqn{\mathcal{Q}_{\mathsf{C},X}(\delta)}{Q_{C,X}(delta)}.
 #' The pooled restriction is the weaker of the two, so
-#' \eqn{\underline{\tau}_{\mathsf{TV},X}(\delta) \le \underline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}-lower(delta) <= tau_{TV,X}^pw-lower(delta)}
+#' \eqn{\underline{\tau}_{X}(\delta) \le \underline{\tau}^{\mathsf{pw}}_{X}(\delta)}{tau_X-lower(delta) <= tau_X^pw-lower(delta)}
 #' and
-#' \eqn{\overline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta) \le \overline{\tau}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}^pw-upper(delta) <= tau_{TV,X}-upper(delta)},
+#' \eqn{\overline{\tau}^{\mathsf{pw}}_{X}(\delta) \le \overline{\tau}_{X}(\delta)}{tau_X^pw-upper(delta) <= tau_X-upper(delta)},
 #' with equality at \eqn{\delta = 0}{delta = 0} and at
 #' \eqn{\delta = 1}{delta = 1}, where both collapse to the covariate Lee
 #' (2009) bounds
@@ -163,18 +163,18 @@
 #' \eqn{\overline{\tau}_{\mathsf{Lee},X}}{tau_{Lee,X}-upper}.
 #'
 #' For `neighborhood = "tv"` the reported bounds are the pooled (joint)
-#' bounds \eqn{\underline{\tau}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}-lower(delta)}
-#' and \eqn{\overline{\tau}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}-upper(delta)}:
+#' bounds \eqn{\underline{\tau}_{X}(\delta)}{tau_X-lower(delta)}
+#' and \eqn{\overline{\tau}_{X}(\delta)}{tau_X-upper(delta)}:
 #' the budget allocation
 #' \eqn{t : \mathcal{X} \to \mathbb{R}_+}{t : calX -> R_+} subject to
-#' \eqn{\mathbb{E}_{P_{*,\mathsf{T}}}[t(X)] \le (1 - p_0) \delta}{E_{P_{*,T}}[t(X)] <= (1 - p_0) delta}
+#' \eqn{\mathbb{E}_{P_{\mathsf{T}}}[t(X)] \le (1 - \pi) \delta}{E_{P_T}[t(X)] <= (1 - pi) delta}
 #' is solved exactly by a greedy fill over the stratum value functions
 #' \eqn{V(t; x)}{V(t; x)}, which are piecewise linear in the cell budget and
 #' concave for the upper bound and convex for the lower one. The
 #' within-stratum bounds
-#' \eqn{\underline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}^pw-lower(delta)}
+#' \eqn{\underline{\tau}^{\mathsf{pw}}_{X}(\delta)}{tau_X^pw-lower(delta)}
 #' and
-#' \eqn{\overline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}^pw-upper(delta)}
+#' \eqn{\overline{\tau}^{\mathsf{pw}}_{X}(\delta)}{tau_X^pw-upper(delta)}
 #' are returned in `details$pooled$pw` for reference. For
 #' `neighborhood = "contamination"` the reported bounds impose the common
 #' budget `delta` within every retained cell and aggregate; they remain
@@ -187,15 +187,15 @@
 #' the entire bounds curve on each replicate, yielding
 #' \eqn{\widehat{\overline{\tau}}^{(b)}(\delta)}{tau-upper-hat^(b)(delta)},
 #' \eqn{b = 1, \dots, B}{b = 1, ..., B}. Each replicate therefore redraws the
-#' arm-specific response rates and hence \eqn{\widehat{p}_0}{p_0-hat}, so the
+#' arm-specific response rates and hence \eqn{\widehat{\pi}}{pi-hat}, so the
 #' reported standard errors carry the estimation uncertainty in
-#' \eqn{p_0}{p_0}, which the naive variance
+#' \eqn{\pi}{pi}, which the naive variance
 #' \eqn{\widehat{\sigma}^2_{\mathsf{naive}}(\delta)}{sigma^2_naive(delta)}
-#' omits by treating \eqn{\widehat{p}_0}{p_0-hat} as known; in the paper's
+#' omits by treating \eqn{\widehat{\pi}}{pi-hat} as known; in the paper's
 #' influence function
 #' \eqn{\psi_{\mathsf{full}}(W; \delta)}{psi_full(W; delta)} this uncertainty
 #' is the term
-#' \eqn{\varkappa(\delta) \psi_{p_0}(W)}{varkappa(delta) psi_{p_0}(W)}. The reported
+#' \eqn{\varkappa(\delta) \psi_{\pi}(W)}{varkappa(delta) psi_{pi}(W)}. The reported
 #' `upper_se` is the standard deviation of the draws
 #' \eqn{\widehat{\overline{\tau}}^{(b)}(\delta)}{tau-upper-hat^(b)(delta)}
 #' across replicates, that is the paper's
@@ -254,27 +254,27 @@
 #'   * `application`: `"attrition"`.
 #'   * `bounds`: data frame with one row per requested budget and columns
 #'     `delta`, `lower`, `upper`, holding the sensitivity bounds
-#'     \eqn{\underline{\tau}_{\mathsf{TV}}(\delta)}{tau_TV-lower(delta)} and
-#'     \eqn{\overline{\tau}_{\mathsf{TV}}(\delta)}{tau_TV-upper(delta)} (or
+#'     \eqn{\underline{\tau}(\delta)}{tau-lower(delta)} and
+#'     \eqn{\overline{\tau}(\delta)}{tau-upper(delta)} (or
 #'     their pooled covariate counterparts
-#'     \eqn{\underline{\tau}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}-lower(delta)}
+#'     \eqn{\underline{\tau}_{X}(\delta)}{tau_X-lower(delta)}
 #'     and
-#'     \eqn{\overline{\tau}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}-upper(delta)}
+#'     \eqn{\overline{\tau}_{X}(\delta)}{tau_X-upper(delta)}
 #'     when `covariates` is supplied), plus, when `bootstrap = TRUE`,
 #'     `lower_se`, `upper_se`, `ci_lower`, `ci_upper` (outer percentile
 #'     band endpoints at `level`).
-#'   * `point`: the estimate of \eqn{\tau_{\mathsf{RCT}}(P_{*})}{tau_RCT(P_*)}
+#'   * `point`: the estimate of \eqn{\tau_0}{tau_0}
 #'     at \eqn{\delta = 0}{delta = 0}, where the bounds collapse to the
 #'     difference in means among respondents
-#'     \eqn{\tau_{\mathsf{MCAR}}(P_{*})}{tau_MCAR(P_*)} (with `covariates`,
+#'     \eqn{\tau_{\mathsf{MCAR}}(P_0)}{tau_MCAR(P_0)} (with `covariates`,
 #'     to its covariate-weighted analogue).
 #'   * `n`: number of rows of `data` used.
 #'   * `neighborhood`, `level`, `B`, `estimand_label`, `call` as documented
 #'     in the package overview (`level` and `B` are `NA` without
 #'     inference).
-#'   * `details`: list with `p_star` (the complier share \eqn{p_0}{p_0},
+#'   * `details`: list with `p_star` (the complier share \eqn{\pi}{pi},
 #'     which also sets the trimming mass), `response_rate` (the arm-specific
-#'     response rates \eqn{(\widehat{\pi}_0, \widehat{\pi}_1)}{(pi_0-hat, pi_1-hat)})
+#'     response rates \eqn{(\widehat{r}_0, \widehat{r}_1)}{(r_0-hat, r_1-hat)})
 #'     and `n_by_arm` / `n_respondents_by_arm` (named, control and treated),
 #'     `lee` (list with the Lee-endpoint `lower` / `upper`,
 #'     \eqn{\underline{\tau}_{\mathsf{Lee}}}{tau_Lee-lower} and
@@ -286,9 +286,9 @@
 #'     confidence-band breakdown budget; `NA` when censored beyond one),
 #'     `pooled` (with covariates: per-stratum table, coverage, dropped cells,
 #'     and the within-stratum reference curve `pw`,
-#'     \eqn{\underline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}^pw-lower(delta)}
+#'     \eqn{\underline{\tau}^{\mathsf{pw}}_{X}(\delta)}{tau_X^pw-lower(delta)}
 #'     and
-#'     \eqn{\overline{\tau}^{\mathsf{pw}}_{\mathsf{TV},X}(\delta)}{tau_{TV,X}^pw-upper(delta)},
+#'     \eqn{\overline{\tau}^{\mathsf{pw}}_{X}(\delta)}{tau_X^pw-upper(delta)},
 #'     under total variation), `n_clusters` (with `cluster`), and `boot`
 #'     (replicate counts, width standard errors, and — when
 #'     memory-reasonable — the matrices of bound draws).
@@ -499,14 +499,9 @@ tvbounds_attrition <- function(data, outcome, treatment, response,
     if (!is.null(seed)) {
       if (!is.numeric(seed) || length(seed) != 1L || is.na(seed))
         stop("`seed` must be a single number (or NULL).", call. = FALSE)
-      # Set the RNG locally: save and restore .Random.seed so the call has
+      # Set the RNG locally: withr scopes the seed to this call, so it has
       # no side effect on the caller's RNG state.
-      if (!exists(".Random.seed", envir = globalenv(), inherits = FALSE))
-        stats::runif(1)
-      old_seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
-      on.exit(assign(".Random.seed", old_seed, envir = globalenv()),
-              add = TRUE)
-      set.seed(seed)
+      withr::local_seed(seed)
     }
     if (verbose)
       message(sprintf("Bootstrapping (B = %d%s) ...", B,

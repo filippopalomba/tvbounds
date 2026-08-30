@@ -8,7 +8,7 @@ tvbounds_riv(
   y,
   x,
   z,
-  F,
+  Fmat,
   p = NULL,
   controls = NULL,
   delta = seq(0, 1, by = 0.002),
@@ -26,8 +26,8 @@ tvbounds_riv(
 instrument: \code{z[i]} is the formula of unit \code{i} evaluated at the realized
 shocks, \eqn{z_i = f_i(v;w)}{z_i = f_i(v; w)}.}
 
-\item{F}{Numeric n x S matrix of counterfactual instrument draws:
-\code{F[i, s]} is the formula of unit \code{i} evaluated at the \code{s}-th
+\item{Fmat}{Numeric n x S matrix of counterfactual instrument draws:
+\code{Fmat[i, s]} is the formula of unit \code{i} evaluated at the \code{s}-th
 counterfactual shock configuration, \eqn{f_i(v^{(s)};w)}{f_i(v^(s); w)}.
 These are the draws from the postulated assignment process used for
 recentering (in Borusyak and Hull (2023), permuted or re-simulated shock
@@ -35,7 +35,7 @@ allocations).}
 
 \item{p}{Optional numeric S-vector holding the probabilities that the
 postulated assignment distribution \eqn{P_{*}}{P_*} attaches to the
-columns of \code{F}, that is to the configurations
+columns of \code{Fmat}, that is to the configurations
 \eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}.  Defaults to \code{NULL},
 meaning the uniform distribution \code{1/S} on each draw, which is the
 postulated assignment distribution of Borusyak and Hull (2023).  Must be
@@ -43,7 +43,7 @@ nonnegative and sum to one.}
 
 \item{controls}{Optional numeric matrix or data frame of control
 variables (n rows) to be partialled out of \code{y}, \code{x}, \code{z}, and each
-column of \code{F}.  A constant is always included.  Default \code{NULL}.}
+column of \code{Fmat}.  A constant is always included.  Default \code{NULL}.}
 
 \item{delta}{Numeric vector of sensitivity budgets
 \eqn{\delta \in [0,1]}{delta in [0, 1]} at which the bounds are traced.
@@ -173,7 +173,7 @@ and the reported estimate is
 
 \strong{How the arguments encode the shock space.}  The package represents
 \eqn{P_{*}}{P_*} by \code{S} shock configurations
-\eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}: entry \code{F[i, s]} holds
+\eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}: entry \code{Fmat[i, s]} holds
 \eqn{f_i(v^{(s)};w)}{f_i(v^(s); w)}, the formula of unit \code{i} at the \code{s}-th
 configuration, \code{p[s]} holds the probability that \eqn{P_{*}}{P_*} assigns to
 that configuration, and \code{z[i]} holds \eqn{z_i = f_i(v;w)}{z_i = f_i(v; w)}.
@@ -262,7 +262,7 @@ occurs at 1.  Rows of \code{bounds} at budgets where the bounds are vacuous
 carry \code{NA}.
 
 \strong{Controls.}  When \code{controls} is supplied, \code{y}, \code{x}, \code{z}, and every column
-of \code{F} are residualized on the controls and a constant (when
+of \code{Fmat} are residualized on the controls and a constant (when
 \code{controls = NULL}, on the constant alone) before the bounds are computed.
 By the Frisch--Waugh--Lovell theorem this leaves the just-identified
 two-stage least squares coefficient on \code{x} unchanged, because the

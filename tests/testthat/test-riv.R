@@ -383,7 +383,7 @@ test_that("tvbounds_riv validates its inputs with informative errors", {
   expect_error(tvbounds_riv(c(des$y[-1], NA), des$x, des$z, des$Fmat), "`y`")
   expect_error(tvbounds_riv(des$y, des$x, des$z, des$Fmat[-1, ]),
                "one row per observation")
-  expect_error(tvbounds_riv(des$y, des$x, des$z, "not a matrix"), "`F`")
+  expect_error(tvbounds_riv(des$y, des$x, des$z, "not a matrix"), "`Fmat`")
   expect_error(tvbounds_riv(des$y, des$x, des$z, des$Fmat[, 1, drop = FALSE]),
                "at least 2")
   expect_error(ok(p = rep(1, 5)), "sum to 1")

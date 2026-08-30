@@ -167,36 +167,3 @@ tvb_julia_available <- function() {
   .tvb_state$initialized <- TRUE
   invisible(TRUE)
 }
-
-#' Save the state of R's random number generator
-#'
-#' Companion of `.tvb_restore_seed()`; used so that seeded calls have no
-#' side effect on the caller's RNG stream.
-#'
-#' @return The current `.Random.seed`, or `NULL` if none exists yet.
-#' @keywords internal
-#' @noRd
-.tvb_preserve_seed <- function() {
-  if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-    get(".Random.seed", envir = globalenv(), inherits = FALSE)
-  } else {
-    NULL
-  }
-}
-
-#' Restore the state of R's random number generator
-#'
-#' @param old A value previously returned by `.tvb_preserve_seed()`.
-#' @return `invisible(NULL)`.
-#' @keywords internal
-#' @noRd
-.tvb_restore_seed <- function(old) {
-  if (is.null(old)) {
-    if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-      rm(".Random.seed", envir = globalenv())
-    }
-  } else {
-    assign(".Random.seed", old, envir = globalenv())
-  }
-  invisible(NULL)
-}

@@ -63,7 +63,7 @@
 #'
 #' **How the arguments encode the shock space.**  The package represents
 #' \eqn{P_{*}}{P_*} by `S` shock configurations
-#' \eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}: entry `F[i, s]` holds
+#' \eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}: entry `Fmat[i, s]` holds
 #' \eqn{f_i(v^{(s)};w)}{f_i(v^(s); w)}, the formula of unit `i` at the `s`-th
 #' configuration, `p[s]` holds the probability that \eqn{P_{*}}{P_*} assigns to
 #' that configuration, and `z[i]` holds \eqn{z_i = f_i(v;w)}{z_i = f_i(v; w)}.
@@ -150,7 +150,7 @@
 #' carry `NA`.
 #'
 #' **Controls.**  When `controls` is supplied, `y`, `x`, `z`, and every column
-#' of `F` are residualized on the controls and a constant (when
+#' of `Fmat` are residualized on the controls and a constant (when
 #' `controls = NULL`, on the constant alone) before the bounds are computed.
 #' By the Frisch--Waugh--Lovell theorem this leaves the just-identified
 #' two-stage least squares coefficient on `x` unchanged, because the
@@ -162,22 +162,22 @@
 #' @param z Numeric n-vector, the realized (un-recentered) candidate
 #'   instrument: `z[i]` is the formula of unit `i` evaluated at the realized
 #'   shocks, \eqn{z_i = f_i(v;w)}{z_i = f_i(v; w)}.
-#' @param F Numeric n x S matrix of counterfactual instrument draws:
-#'   `F[i, s]` is the formula of unit `i` evaluated at the `s`-th
+#' @param Fmat Numeric n x S matrix of counterfactual instrument draws:
+#'   `Fmat[i, s]` is the formula of unit `i` evaluated at the `s`-th
 #'   counterfactual shock configuration, \eqn{f_i(v^{(s)};w)}{f_i(v^(s); w)}.
 #'   These are the draws from the postulated assignment process used for
 #'   recentering (in Borusyak and Hull (2023), permuted or re-simulated shock
 #'   allocations).
 #' @param p Optional numeric S-vector holding the probabilities that the
 #'   postulated assignment distribution \eqn{P_{*}}{P_*} attaches to the
-#'   columns of `F`, that is to the configurations
+#'   columns of `Fmat`, that is to the configurations
 #'   \eqn{v^{(1)}, \dots, v^{(S)}}{v^(1), ..., v^(S)}.  Defaults to `NULL`,
 #'   meaning the uniform distribution `1/S` on each draw, which is the
 #'   postulated assignment distribution of Borusyak and Hull (2023).  Must be
 #'   nonnegative and sum to one.
 #' @param controls Optional numeric matrix or data frame of control
 #'   variables (n rows) to be partialled out of `y`, `x`, `z`, and each
-#'   column of `F`.  A constant is always included.  Default `NULL`.
+#'   column of `Fmat`.  A constant is always included.  Default `NULL`.
 #' @param delta Numeric vector of sensitivity budgets
 #'   \eqn{\delta \in [0,1]}{delta in [0, 1]} at which the bounds are traced.
 #'   Default `seq(0, 1, by = 0.002)`.
@@ -272,13 +272,12 @@
 #' fit_cont$point
 #'
 #' @export
-tvbounds_riv <- function(y, x, z, F, p = NULL, controls = NULL,
+tvbounds_riv <- function(y, x, z, Fmat, p = NULL, controls = NULL,
                          delta = seq(0, 1, by = 0.002),
                          neighborhood = c("tv", "contamination"),
                          tau_star = 0, verbose = FALSE) {
   cl <- match.call()
   neighborhood <- match.arg(neighborhood)
-  Fmat <- F
 
   # --- input validation (fail early, name the argument) ----------------------
   .tvb_check_numeric_vector(y, "y")
@@ -291,24 +290,24 @@ tvbounds_riv <- function(y, x, z, F, p = NULL, controls = NULL,
   if (n < 2L) stop("`y` must contain at least 2 observations.", call. = FALSE)
   if (is.data.frame(Fmat)) Fmat <- as.matrix(Fmat)
   if (!is.matrix(Fmat) || !is.numeric(Fmat)) {
-    stop("`F` must be a numeric matrix (n x S) of counterfactual instrument draws.",
+    stop("`Fmat` must be a numeric matrix (n x S) of counterfactual instrument draws.",
          call. = FALSE)
   }
   if (nrow(Fmat) != n) {
-    stop("`F` must have one row per observation (nrow(F) == length(y)).",
+    stop("`Fmat` must have one row per observation (nrow(Fmat) == length(y)).",
          call. = FALSE)
   }
   S <- ncol(Fmat)
   if (S < 2L) {
-    stop("`F` must contain at least 2 counterfactual draws (columns).",
+    stop("`Fmat` must contain at least 2 counterfactual draws (columns).",
          call. = FALSE)
   }
   if (anyNA(Fmat) || any(!is.finite(Fmat))) {
-    stop("`F` must not contain missing or non-finite values.", call. = FALSE)
+    stop("`Fmat` must not contain missing or non-finite values.", call. = FALSE)
   }
   if (!is.null(p)) {
     if (!is.numeric(p) || length(p) != S) {
-      stop("`p` must be a numeric vector with one probability per column of `F`.",
+      stop("`p` must be a numeric vector with one probability per column of `Fmat`.",
            call. = FALSE)
     }
     if (anyNA(p) || any(p < 0)) {

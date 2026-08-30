@@ -1,8 +1,23 @@
 # cran-comments
 
-## Submission
+## Resubmission
 
-This is a new submission: the first release of tvbounds (version 0.1.0).
+This is a resubmission of the first release (now version 0.1.1),
+addressing the three points raised in the CRAN review of 2026-08-21:
+
+* References in the Description: the Palomba (2026) reference now carries
+  an auto-linking URL, in the requested form
+  authors (year) "Title" <https:...>. The paper is an unpublished working
+  paper with no DOI or ISBN, so the author's page hosting it is linked.
+* T and F: the package never used `T`/`F` as logical shorthand; the flag
+  came from an argument of `tvbounds_riv()` named `F`. That argument is
+  renamed to `Fmat` throughout the package, documentation, tests, and
+  vignette.
+* Writing to the .GlobalEnv: the only writes were the customary
+  save-and-restore of `.Random.seed` around user-seeded computations.
+  All of it now goes through withr::local_seed() /
+  withr::local_preserve_seed() ('withr' added to Imports); the package
+  itself no longer assigns into the global environment anywhere.
 
 ## Test environments
 

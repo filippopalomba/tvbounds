@@ -234,13 +234,21 @@ test_that("validation failures leave the caller's RNG stream untouched", {
   expect_identical(.Random.seed, before)
 })
 
-test_that("seed preserve/restore helpers round-trip the RNG state", {
+test_that("the withr seed scope round-trips the RNG state", {
+  # The RNG state is scoped through withr::local_seed() /
+  # withr::local_preserve_seed(); confirm the pattern used by
+  # tvbounds_counterfactual() leaves the caller's stream untouched.
   set.seed(7)
   before <- .Random.seed
-  old <- .tvb_preserve_seed()
-  set.seed(123456)
-  runif(10)
-  .tvb_restore_seed(old)
+  local({
+    withr::local_seed(123456)
+    runif(10)
+  })
+  expect_identical(.Random.seed, before)
+  local({
+    withr::local_preserve_seed()
+    runif(10)
+  })
   expect_identical(.Random.seed, before)
 })
 
