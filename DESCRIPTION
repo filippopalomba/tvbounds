@@ -19,7 +19,7 @@ Imports:
     ggplot2 (>= 3.4.0),
     stats,
     utils,
-    withr
+    withr (>= 3.0.3)
 Suggests:
     JuliaCall,
     testthat (>= 3.1.5),
