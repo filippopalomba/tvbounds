@@ -1,36 +1,49 @@
-# R session artifacts
-.Rproj.user/
+# ---------------------------------------------------------------------------
+# Credentials: never commit an upload token or a configured repository file
+# ---------------------------------------------------------------------------
+.pypirc
+pypi_upload*
+*.token
+*_token.txt
+
+# ---------------------------------------------------------------------------
+# Internal working material: everything deliberately kept out of the CRAN
+# tarball and out of the PyPI distributions
+# ---------------------------------------------------------------------------
+R/DESIGN.md
+R/NOTATION.md
+R/REPO-SPEC.md
+R/preview-vignette.sh
+R/validation/
+python/PY-DESIGN.md
+python/tools/
+python/validation/
+python/docs/man/
+python/docs/DESCRIPTION
+python/docs/MANUAL-DIFFERENCES.md
+
+# ---------------------------------------------------------------------------
+# Build artifacts
+# ---------------------------------------------------------------------------
+*.tar.gz
+*.Rcheck/
+inst/doc/
+python/dist/
+python/build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ---------------------------------------------------------------------------
+# Session artifacts and OS / editor noise
+# ---------------------------------------------------------------------------
 .Rhistory
 .RData
 .Ruserdata
+.Rproj.user/
 *.Rproj
-
-# Build artifacts
-*.tar.gz
-*.Rcheck/
-/Meta/
-/doc/
-inst/doc/
-
-# Compiled objects (none expected, but keep the net wide)
-*.o
-*.so
-*.dll
-
-# Julia: lockfile is machine-specific, Project.toml is the spec
-inst/julia/Manifest.toml
-inst/julia/**/Manifest.toml
-
-# knitr/vignette intermediates
-vignettes/*.html
-vignettes/*.R
-vignettes/*_cache/
-vignettes/*_files/
-
-# OS noise
 .DS_Store
 Thumbs.db
-
-# Editor noise
 .vscode/
 .idea/

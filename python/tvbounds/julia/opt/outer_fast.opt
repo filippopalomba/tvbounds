@@ -1,0 +1,22 @@
+# KNITRO 15.1 options for the outer loop (over theta) -- FAST variant.
+# Uses the code's analytic envelope-theorem gradient (gradopt 1) instead of
+# finite differences (gradopt 2), and looser tolerances suited to plotting.
+# This cuts inner-solve count per outer iteration by ~l (=10) and total
+# iterations, without moving the optimum (gradient method changes the path,
+# not the argmax).
+nlp_algorithm 0
+convex        0
+gradopt       1
+hessopt       2
+feastol       1e-06
+feastol_abs   1e-03
+opttol        1e-04
+opttol_abs    1e-03
+ftol          1e-09
+ftol_iters    4
+xtol          1e-08
+outlev        0
+outmode       0
+honorbnds     1
+eval_fcga     0
+maxit         120

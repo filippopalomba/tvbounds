@@ -1,0 +1,6 @@
+include LICENSE README.md CHANGELOG.md MANIFEST.in
+include docs/tvbounds-manual.pdf
+recursive-include tvbounds/julia *
+include tvbounds/juliapkg.json
+recursive-include tests *.py
+global-exclude __pycache__ *.pyc .DS_Store

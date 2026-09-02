@@ -1,33 +1,48 @@
 # tvbounds
 
 Sensitivity analysis and bounds under total variation neighborhoods, the
-companion R package to Palomba (2026), "Sensitivity Analysis in Population
-Shares."
-
-The [package vignette](https://cran.r-project.org/web/packages/tvbounds/vignettes/tvbounds.html)
-explains what the package does and walks through every functionality in
-detail. The examples below are a condensed version of the ones in the vignette.
+companion software to Palomba (2026), "Sensitivity Analysis in Population
+Shares." The methods are available **both as an R package and as a Python
+module**, with the same functions, the same options and the same manual.
 
 ## Installation
 
+The R package lives in [`R/`](R) and the Python module in
+[`python/`](python), so each is installed from its own subdirectory of this
+repository:
+
 ```r
 # install.packages("remotes")
-remotes::install_github("filippopalomba/tvbounds", build_vignettes = TRUE)
+remotes::install_github("filippopalomba/tvbounds", subdir = "R",
+                        build_vignettes = TRUE)
 ```
 
-Only `ggplot2` and `withr` (plus base R) are required
-at runtime; `build_vignettes = TRUE` additionally needs `knitr` and
-`rmarkdown`.
+```bash
+pip install "git+https://github.com/filippopalomba/tvbounds.git#subdirectory=python"
+```
+
+Only `ggplot2` and `withr` (plus base R) are required at runtime by the R
+package; `build_vignettes = TRUE` additionally needs `knitr` and
+`rmarkdown`. The Python module requires only `numpy`, `pandas` and
+`matplotlib`, and is also on PyPI, so `pip install tvbounds` works too.
+While this repository is private, both commands need a GitHub token with
+read access: pass it as `auth_token` to `install_github()`, and use an
+`https://<token>@github.com/...` URL for `pip`.
+
+The [package vignette](https://cran.r-project.org/web/packages/tvbounds/vignettes/tvbounds.html)
+explains what the software does and walks through every functionality in
+detail. The examples below are a condensed version of the ones in the
+vignette, and are given in both languages.
 
 ## KNITRO requirement for structural counterfactuals
 
 `tvbounds_counterfactual()` solves its
 optimization problems in Julia through the commercial
 [Artelys KNITRO](https://www.artelys.com/solvers/knitro/) solver, so it
-requires Julia (>= 1.9), the `JuliaCall` R package, and a valid KNITRO
-license. **Students can request a free one-year KNITRO license** through
-Artelys' academic program on the same page. The package checks for KNITRO
-once per R session, on the first call. 
+requires Julia (>= 1.9), a valid KNITRO license, and the `JuliaCall` R
+package or the `juliacall` Python package. **Students can request a free
+one-year KNITRO license** through Artelys' academic program on the same
+page. The package checks for KNITRO once per session, on the first call.
 
 ## Quick tour
 
@@ -77,6 +92,49 @@ summary(fit_tv)
 tvbounds_summary(fit_tv, delta = 0.1)
 ```
 
+```python
+import numpy as np
+import pandas as pd
+from tvbounds import tvbounds_attrition, tvbounds_summary
+
+## a small experiment with village-level assignment and selective attrition
+rng = np.random.default_rng(20260820)
+n = 500
+village = np.repeat(np.arange(1, 51), 10)
+d = rng.binomial(1, 0.5, 50)[village - 1]
+x = rng.binomial(1, 0.4, n)
+ability = rng.normal(size=n)
+s = (rng.uniform(size=n) < 1 / (1 + np.exp(-(0.2 + 1.2 * d + 0.5 * ability)))).astype(int)
+y = np.where(s == 1, 1 + 0.35 * d + 0.5 * x + ability + 0.5 * rng.normal(size=n), np.nan)
+rct = pd.DataFrame({"y": y, "d": d, "s": s, "x": x, "village": village})
+
+## total variation bounds with a bootstrap confidence band
+fit_tv = tvbounds_attrition(rct,
+    outcome="y", treatment="d", response="s",
+    delta=np.linspace(0, 1, 21), B=200, seed=1)
+print(fit_tv)
+fit_tv.plot()
+
+## contamination neighborhood: weakly tighter bounds, same endpoints
+fit_ct = tvbounds_attrition(rct,
+    outcome="y", treatment="d", response="s",
+    delta=np.linspace(0, 1, 21), neighborhood="contamination",
+    bootstrap=False)
+
+## cluster bootstrap and covariate-pooled bounds
+fit_cl = tvbounds_attrition(rct,
+    outcome="y", treatment="d", response="s",
+    delta=np.linspace(0, 1, 21), B=200, cluster="village", seed=1)
+fit_x = tvbounds_attrition(rct,
+    outcome="y", treatment="d", response="s", covariates="x",
+    delta=np.linspace(0, 1, 21), B=200, seed=1)
+
+## summary measures: breakdown budgets, shadow price, robustness
+## standard error, certification frontier
+print(fit_tv.summary())
+print(tvbounds_summary(fit_tv, delta=0.1))
+```
+
 ### Recentered instrumental variables
 
 ```r
@@ -104,6 +162,33 @@ c(delta_fs = riv_tv$details$delta_fs,
   censored = riv_tv$details$delta_fs_censored)
 ```
 
+```python
+import numpy as np
+from tvbounds import tvbounds_riv
+
+## a shift-share design: exposure shares W, S counterfactual shock draws
+rng = np.random.default_rng(1901)
+n, K, S = 150, 10, 80
+W = rng.exponential(size=(n, K)) ** 2
+W = W / W.sum(axis=1, keepdims=True)
+g0 = rng.normal(loc=0.3, size=K)
+G = rng.normal(size=(K, S))
+z = W @ g0                                 # realized formula instrument
+Fmat = W @ G                               # n x S counterfactual draws
+x = z + rng.normal(size=n)
+y = 0.5 * x + 0.4 * (W @ rng.normal(size=K)) + 0.5 * rng.normal(size=n)
+
+## bounds under both neighborhoods (deterministic; no inference by design)
+riv_tv = tvbounds_riv(y, x, z, Fmat, delta=np.linspace(0, 1, 101))
+riv_ct = tvbounds_riv(y, x, z, Fmat, delta=np.linspace(0, 1, 101),
+                      neighborhood="contamination")
+print(riv_tv)
+riv_tv.plot()
+
+## first-stage breakdown budget and its censoring flag
+riv_tv.details["delta_fs"], riv_tv.details["delta_fs_censored"]
+```
+
 ### Counterfactuals in structural models (requires KNITRO)
 
 ```r
@@ -126,6 +211,29 @@ fit_cf$bounds
 plot(fit_cf)
 ```
 
+```python
+import tvbounds
+from tvbounds import tvbounds_counterfactual, tvbounds_control
+
+## a toy model shipped with the package: moments in Julia, Bundle signature
+toy = tvbounds.julia_file("examples", "toy.jl")
+
+fit_cf = tvbounds_counterfactual(
+    moments    = (toy, "tvb_toy_moments!"),   # Julia file + function name
+    d          = 1,                           # number of moment conditions
+    theta_lb   = 0.4, theta_ub = 0.6,         # box for the structural parameter
+    delta      = [0.05, 0.1, 0.25, 0.5, 1],   # budgets (strictly positive)
+    divergence = "TVmix",
+    side       = "both",
+    M          = 5000, u_dim = 1,             # scrambled-Halton draws
+    theta_init = 0.5,
+    seed       = 1234,
+    control    = tvbounds_control(maxsolves = 5))
+
+fit_cf.bounds
+fit_cf.plot()
+```
+
 ## Citation
 
 If you use `tvbounds`, please cite:
@@ -135,4 +243,4 @@ paper.
 
 ## License
 
-MIT © Filippo Palomba. See `LICENSE.md`.
+MIT © Filippo Palomba. See `LICENSE`.

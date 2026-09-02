@@ -1,0 +1,17 @@
+# KNITRO 15.1 options for the outer loop (over theta)
+nlp_algorithm 0
+convex        0
+gradopt       2
+hessopt       2
+feastol       1e-06
+feastol_abs   1e-03
+opttol        1e-06
+opttol_abs    1e-03
+ftol          1e-12
+ftol_iters    10
+xtol          1e-10
+outlev        0
+outmode       0
+honorbnds     1
+eval_fcga     0
+maxit         2000

@@ -15,3 +15,8 @@
 ^\.vscode$
 ^\.DS_Store$
 ^tvbounds-manual\.pdf$
+^DESIGN\.md$
+^NOTATION\.md$
+^REPO-SPEC\.md$
+^preview-vignette\.sh$
+^validation$
