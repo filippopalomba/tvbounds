@@ -7,9 +7,20 @@ module**, with the same functions, the same options and the same manual.
 
 ## Installation
 
-The R package lives in [`R/`](R) and the Python module in
-[`python/`](python), so each is installed from its own subdirectory of this
-repository:
+The R package is on [CRAN](https://cran.r-project.org/package=tvbounds) and
+the Python module on [PyPI](https://pypi.org/project/tvbounds/):
+
+```r
+install.packages("tvbounds")
+```
+
+```bash
+pip install tvbounds
+```
+
+The development versions live in this repository, the R package in
+[`R/`](R) and the Python module in [`python/`](python), so each is installed
+from its own subdirectory:
 
 ```r
 # install.packages("remotes")
@@ -24,10 +35,7 @@ pip install "git+https://github.com/filippopalomba/tvbounds.git#subdirectory=pyt
 Only `ggplot2` and `withr` (plus base R) are required at runtime by the R
 package; `build_vignettes = TRUE` additionally needs `knitr` and
 `rmarkdown`. The Python module requires only `numpy`, `pandas` and
-`matplotlib`, and is also on PyPI, so `pip install tvbounds` works too.
-While this repository is private, both commands need a GitHub token with
-read access: pass it as `auth_token` to `install_github()`, and use an
-`https://<token>@github.com/...` URL for `pip`.
+`matplotlib`.
 
 The [package vignette](https://cran.r-project.org/web/packages/tvbounds/vignettes/tvbounds.html)
 explains what the software does and walks through every functionality in
